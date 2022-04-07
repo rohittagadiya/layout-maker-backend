@@ -18,6 +18,9 @@ class manageProducts extends Controller
     public function addProductByUser(Request $request_body)
   {
     $request = json_decode($request_body->input('request_data'));
+    $height = $request->height;
+    $width = $request->width;
+    $type = $request->type;
 
     if (!$request_body->hasFile('file')) {
       return Response::json(array('code' => 201, 'message' => 'Required field file is missing or empty', 'cause' => '', 'data' => json_decode("{}")));
@@ -30,9 +33,9 @@ class manageProducts extends Controller
 
     DB::beginTransaction();
     DB::insert(
-      'INSERT INTO products(product_name)
-                    VALUES(?)',
-      [$new_file_name]
+      'INSERT INTO products(product_name, height, width, product_type)
+                    VALUES(?,?,?,?)',
+      [$new_file_name, $height, $width, $type]
     );
     DB::commit();
 
@@ -42,10 +45,13 @@ class manageProducts extends Controller
 
   public function getProducts()
   {
-    $imagepath = 'http://192.168.29.110/layer-maker/public/products/';
+    $imagepath = 'http://192.168.29.110/layer-maker-be/public/products/';
     $result = DB::select('SELECT 
         id,
         product_name,
+        height,
+        width,
+        product_type,
         concat("' . $imagepath . '","",product_name) AS image
         FROM products
         ');
